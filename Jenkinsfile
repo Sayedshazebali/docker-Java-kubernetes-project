@@ -1,18 +1,9 @@
 pipeline {
-    agent any
-    tools {nodejs "node16" }
-    environment {
-        NODE_ENV='production'
-    }
-    
-  
     stages {
-        stage('source') {
-            steps {
-               git 'https://github.com/Sayedshazebali/docker-Java-kubernetes-project.git'
-               
-            }
-            
+    stage('source') {
+     steps {
+            git 'https://github.com/Sayedshazebali/docker-Java-kubernetes-project.git'
+     }   
         }
 	agent none  stages {
   	stage('Maven Install') {
