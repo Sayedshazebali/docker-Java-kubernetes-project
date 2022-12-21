@@ -1,34 +1,30 @@
 pipeline {
+    agent any 
     stages {
-    stage('source') {
-     steps {
-            git 'https://github.com/Sayedshazebali/docker-Java-kubernetes-project.git'
-     }   
+        stage('configureing kubectl') {    
+            steps {
+                sh 'cat ${HOME}/.kube/config'
+            }
         }
-	agent none  stages {
-  	stage('Maven Install') {
-    	agent {
-      	docker {
-        	image 'maven:3.5.0'
+        stage('building Image') {    
+            steps {
+               sh 'docker build . --no-cache -t shazebali7/php:v1'
+            }
         }
-      steps {
-      	sh 'mvn clean install'
-      }
-    }
-    stage('Docker Build') {
-    	agent any
-      steps {
-      	sh 'docker build -t shazebali7/productcatlogue:latest .'
-      }
-    }
-    stage('Docker Push') {
-    	agent any
-      steps {
-      	withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
-        	sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
-          sh 'docker push shazebali7/productcatlogue:latest'
+        stage('pushing image to hub') { 
+            steps {
+               sh ' docker  login --username  shazebali7 --password "Shazeb@li7" && docker push shazebali7/php:v1 ' 
+            }
         }
-      }
+        stage('Deploying changes') { 
+            steps {
+               sh 'kubectl apply -f deploy.yml && kubectl get svc'
+            }
+        }
+        stage ('verifying deployment') {
+            steps {
+            sh 'kubectl get deploy test-springboot'
+            }
+        }
     }
-  }
 }
